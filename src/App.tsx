@@ -1,12 +1,15 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { HeaderComponent, HeaderSearchComponent } from "./components/header";
-import { InitialMainComponent, NotFoundMainComponent } from "./components/main";
+import {
+  InitialMainComponent,
+  MainComponent,
+  NotFoundMainComponent,
+} from "./components/main";
 
 export interface IPokemon {
   id: number;
   name: string;
-  url: string;
   image_front?: string;
 }
 export interface INotFound {
@@ -16,56 +19,81 @@ export interface INotFound {
 
 const App = () => {
   //? States
-  const [pokemons, setPokemons] = useState<IPokemon[]>([]);
+  const [pokemon, setPokemon] = useState<IPokemon>();
   const [notFound, setNotFound] = useState<INotFound>();
   //? Functions
-  const fecthPokemons = async (): Promise<void> => {
+  // const fecthPokemons = async (): Promise<void> => {
+  //   try {
+  //     const res = await axios.get(
+  //       "https://pokeapi.co/api/v2/pokemon?limit=151&offset=0"
+  //     );
+  //     let result: any[] = [];
+  //     res.data.results.map(async (item: IPokemon) => {
+  //       try {
+  //         const { data } = await axios.get(item.url);
+
+  //         const pokemon: IPokemon = {
+  //           id: data.id,
+  //           name: item.name,
+  //           image_front: data.sprites.front_default,
+  //         };
+  //         result = [...result, pokemon];
+  //         result.sort(function (a, b) {
+  //           return a.id - b.id || a.name.localeCompare(b.name);
+  //         });
+
+  //         setPokemons(result);
+  //       } catch (err) {}
+  //     });
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+  const fetchPokemonByIdOrName = async (
+    payload: string
+  ): Promise<IPokemon | undefined> => {
     try {
       const res = await axios.get(
-        "https://pokeapi.co/api/v2/pokemon?limit=151&offset=0"
+        `https://pokeapi.co/api/v2/pokemon/${payload}`
       );
-      let result: any[] = [];
-      res.data.results.map(async (item: IPokemon) => {
-        try {
-          const { data } = await axios.get(item.url);
-
-          const pokemon: IPokemon = {
-            id: data.id,
-            name: item.name,
-            url: item.url,
-            image_front: data.sprites.front_default,
-          };
-          result = [...result, pokemon];
-          result.sort(function (a, b) {
-            return a.id - b.id || a.name.localeCompare(b.name);
-          });
-
-          setPokemons(result);
-        } catch (err) {}
-      });
+      return {
+        id: res.data.id,
+        name: res.data.name,
+        image_front: res.data.sprites.front_default,
+      };
     } catch (err) {
-      console.log(err);
+      setNotFound({ check: true, message: "Pokémon Not Found!" });
     }
   };
-  const handlingSearch = () => {
+  const handlingSearch = async (
+    e: React.FormEvent<HTMLFormElement>,
+    payload: string
+  ) => {
+    e.preventDefault();
     setNotFound({
-      check: true,
-      message: "pokémon not found, please search again",
+      check: false,
+      message: "",
     });
+    const response = await fetchPokemonByIdOrName(payload);
+    if (response !== undefined) {
+      setPokemon(response);
+    }
   };
-  //? Hooks
-  useEffect(() => {
-    fecthPokemons();
-  }, []);
 
   return (
     <div className="bg-[#F5FBFB] px-4 py-10 min-h-screen font-poppins flex flex-col">
       <HeaderComponent />
-      <HeaderSearchComponent handleChange={handlingSearch} />
+      <HeaderSearchComponent handleSubmit={handlingSearch} />
       {notFound?.check ? (
         <NotFoundMainComponent message={notFound.message} />
       ) : (
-        <InitialMainComponent />
+        <>
+          {pokemon ? (
+            <MainComponent pokemon={pokemon} />
+          ) : (
+            <InitialMainComponent />
+          )}
+        </>
       )}
     </div>
   );

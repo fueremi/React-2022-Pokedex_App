@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { HSCProp } from "./interfaces";
 
 export const HeaderComponent = () => {
@@ -11,9 +12,16 @@ export const HeaderComponent = () => {
   );
 };
 
-export const HeaderSearchComponent = ({ handleChange }: HSCProp) => {
+export const HeaderSearchComponent = ({ handleSubmit }: HSCProp) => {
+  const [search, setSearch] = useState<string>("");
   return (
-    <div className="flex items-center justify-center gap-4">
+    <form
+      onSubmit={(e) => {
+        search !== "" && handleSubmit(e, search);
+        setSearch("");
+      }}
+      className="flex items-center justify-center gap-4"
+    >
       <div className="relative flex-1 text-[#2D3055] group">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -31,13 +39,15 @@ export const HeaderSearchComponent = ({ handleChange }: HSCProp) => {
         </svg>
         <input
           type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Name or Number"
           className="p-3 pl-12 bg-[#EAF3F5] w-full rounded-lg group-focus:outline-1 outline-[#2D3055]"
         />
       </div>
-      <span
+      <button
+        type="submit"
         className="bg-[#2D3055] p-2 rounded-lg text-[#EAF3F5]"
-        onClick={handleChange}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +63,7 @@ export const HeaderSearchComponent = ({ handleChange }: HSCProp) => {
             d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
           />
         </svg>
-      </span>
-    </div>
+      </button>
+    </form>
   );
 };

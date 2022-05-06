@@ -1,5 +1,5 @@
 import React from "react";
 
 export interface HSCProp {
-  handleChange: React.MouseEventHandler<HTMLSpanElement>;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>, payload: string) => void;
 }
